@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS">
+<meta name="theme-color" content="#0a0a0f">
+<title>JARVIS — Personal Intelligence</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="scan" id="scan"></div>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-ring"></div>
+      <div>
+        <div class="logo-text">JARVIS</div>
+        <div class="logo-sub">Personal Intelligence</div>
+      </div>
+    </div>
+    <button class="sync-btn" id="syncBtn" onclick="triggerSync()">
+      <svg class="si" id="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+        <path d="M21 3v5h-5"/>
+        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+        <path d="M8 16H3v5"/>
+      </svg>
+      <span id="slbl">Sync Drive</span>
+      <div class="sdot" id="sdot"></div>
+    </button>
+  </div>
+
+  <!-- HOME VIEW -->
+  <div class="view active" id="view-home">
+
+    <div class="status">
+      <span class="stag">LIVE</span>
+      <span id="statusTxt">Connecting to Google Drive…</span>
+    </div>
+
+    <div class="slabel">// energy balance</div>
+    <div class="energy-card">
+      <div class="energy-top">
+        <div class="energy-title">Today's Balance</div>
+        <div class="energy-badge" id="balBadge">Loading…</div>
+      </div>
+      <div class="energy-nums">
+        <div class="en-block">
+          <div class="en-val" id="enEaten" style="color:var(--accent3)">—</div>
+          <div class="en-lbl">Eaten (kcal)</div>
+        </div>
+        <div class="en-block">
+          <div class="en-val" id="enBurned" style="color:var(--teal2)">—</div>
+          <div class="en-lbl">Burned (kcal)</div>
+        </div>
+        <div class="en-block">
+          <div class="en-val" id="enNet" style="color:var(--amber)">—</div>
+          <div class="en-lbl">Net</div>
+        </div>
+      </div>
+      <div class="energy-bar-wrap"><div class="energy-bar" id="enBar" style="width:0%"></div></div>
+      <div class="energy-bar-lbl"><span>0</span><span id="tdeeBarLbl">TDEE —</span></div>
+      <div class="tdee-row">
+        <div>
+          <div class="tdee-lbl">Est. TDEE (Mifflin-St Jeor)</div>
+          <div class="tdee-val" id="tdeeVal">Enter body stats below ↓</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-align:right">Maintenance<br>calories</div>
+      </div>
+    </div>
+
+    <div class="slabel">// macros</div>
+    <div class="macro-row">
+      <div class="macro-card">
+        <div class="macro-val" style="color:#f87171" id="mProt">—</div>
+        <div class="macro-unit">g</div>
+        <div class="macro-lbl">Protein</div>
+        <div class="macro-bar-wrap"><div class="macro-bar-fill" id="mProtBar" style="background:#f87171;width:0%"></div></div>
+      </div>
+      <div class="macro-card">
+        <div class="macro-val" style="color:#fbbf24" id="mCarb">—</div>
+        <div class="macro-unit">g</div>
+        <div class="macro-lbl">Carbs</div>
+        <div class="macro-bar-wrap"><div class="macro-bar-fill" id="mCarbBar" style="background:#fbbf24;width:0%"></div></div>
+      </div>
+      <div class="macro-card">
+        <div class="macro-val" style="color:#a78bfa" id="mFat">—</div>
+        <div class="macro-unit">g</div>
+        <div class="macro-lbl">Fats</div>
+        <div class="macro-bar-wrap"><div class="macro-bar-fill" id="mFatBar" style="background:#a78bfa;width:0%"></div></div>
+      </div>
+      <div class="macro-card">
+        <div class="macro-val" style="color:#60a5fa" id="mWater">—</div>
+        <div class="macro-unit">ml</div>
+        <div class="macro-lbl">Water</div>
+        <div class="macro-bar-wrap"><div class="macro-bar-fill" id="mWaterBar" style="background:#60a5fa;width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="slabel">// vitals</div>
+    <div class="stat-grid">
+      <div class="sc sleep"><span class="sc-delta" id="dSleep">—</span><span class="sc-icon">🌙</span><div class="sc-val" id="vSleep">—</div><div class="sc-unit">hrs</div><div class="sc-lbl">Sleep</div></div>
+      <div class="sc steps"><span class="sc-delta" id="dSteps">—</span><span class="sc-icon">👟</span><div class="sc-val" id="vSteps">—</div><div class="sc-unit">steps</div><div class="sc-lbl">Steps</div></div>
+      <div class="sc hrv"><span class="sc-delta" id="dHRV">—</span><span class="sc-icon">💓</span><div class="sc-val" id="vHRV">—</div><div class="sc-unit">ms</div><div class="sc-lbl">HRV</div></div>
+      <div class="sc rhr"><span class="sc-delta" id="dRHR">—</span><span class="sc-icon">❤️</span><div class="sc-val" id="vRHR">—</div><div class="sc-unit">bpm</div><div class="sc-lbl">Rest HR</div></div>
+      <div class="sc body"><span class="sc-delta" id="dBody">—</span><span class="sc-icon">⚡</span><div class="sc-val" id="vBody">—</div><div class="sc-unit">% fat</div><div class="sc-lbl">Body Fat</div></div>
+      <div class="sc vo2"><span class="sc-delta" id="dVO2">—</span><span class="sc-icon">🫁</span><div class="sc-val" id="vVO2">—</div><div class="sc-unit">ml/kg</div><div class="sc-lbl">VO2 Max</div></div>
+    </div>
+
+    <div class="slabel">// ai analysis</div>
+    <div class="ai-card" id="sleepCard" onclick="runAnalysis('sleep')">
+      <div class="ai-card-hdr">
+        <span class="ai-badge">SLEEP</span>
+        <div class="ai-card-title">Sleep Summary</div>
+        <span class="ai-tap">tap to analyze</span>
+      </div>
+      <div class="ai-card-body" id="sleepSummary">Sync your data then tap to generate AI sleep analysis…</div>
+    </div>
+    <div class="ai-card" id="workoutCard" onclick="runAnalysis('workout')">
+      <div class="ai-card-hdr">
+        <span class="ai-badge" style="background:rgba(45,212,191,.12);color:var(--teal2)">WORKOUT</span>
+        <div class="ai-card-title">Latest Workout</div>
+        <span class="ai-tap">tap to analyze</span>
+      </div>
+      <div class="ai-card-body" id="workoutSummary">Sync your data then tap to generate AI workout summary…</div>
+      <div class="strain-score" id="strainWrap" style="display:none">
+        <span>Strain Score</span>
+        <span class="strain-num" id="strainNum">—</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text3)">/21</span>
+      </div>
+    </div>
+
+    <div class="slabel">// body stats (tdee calculator)</div>
+    <div class="body-grid">
+      <div class="bc"><input type="number" id="bAge" placeholder="—" oninput="calcTDEE()"><div class="bc-unit">yrs</div><div class="bc-lbl">Age</div></div>
+      <div class="bc"><input type="number" id="bWeight" placeholder="—" oninput="calcTDEE()"><div class="bc-unit">lbs</div><div class="bc-lbl">Weight</div></div>
+      <div class="bc"><input type="number" id="bHeight" placeholder="—" oninput="calcTDEE()"><div class="bc-unit">cm</div><div class="bc-lbl">Height</div></div>
+      <div class="bc" style="grid-column:span 3">
+        <select id="bAct" onchange="calcTDEE()">
+          <option value="1.2">Sedentary</option>
+          <option value="1.375">Light (1-2x/wk)</option>
+          <option value="1.55" selected>Moderate (3-5x/wk)</option>
+          <option value="1.725">Active (6-7x/wk)</option>
+          <option value="1.9">Very Active</option>
+        </select>
+        <div class="bc-lbl">Activity Level</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- AI CHAT VIEW -->
+  <div class="view" id="view-ai">
+    <div class="view-title">Ask JARVIS</div>
+    <div class="view-sub">Powered by Gemini · knows your health, goals & context</div>
+    <div class="chat-wrap">
+      <div class="chat-box">
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="msg">
+            <div class="mav ai">J</div>
+            <div class="mbub">Hey. I'm JARVIS — I have your health data, body composition, nutrition, and goals loaded. What do you want to know?</div>
+          </div>
+        </div>
+        <div class="chat-ir">
+          <input class="chat-in" id="chatIn" placeholder="Ask anything about your data…" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="chat-send" onclick="sendChat()">↑</button>
+        </div>
+      </div>
+      <div class="qbtns">
+        <button class="qbtn" onclick="quickAsk('How is my recovery today based on HRV and sleep?')">Recovery?</button>
+        <button class="qbtn" onclick="quickAsk('Am I in a deficit or surplus and is it on track?')">Deficit?</button>
+        <button class="qbtn" onclick="quickAsk('What should I focus on today to optimize performance?')">Today focus?</button>
+        <button class="qbtn" onclick="quickAsk('How is my body fat trending and what should I adjust?')">Body comp?</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOALS VIEW -->
+  <div class="view" id="view-goals">
+    <div class="view-title">Goals</div>
+    <div class="view-sub">Track your daily habits and progress</div>
+    <div style="padding:0 14px" id="goalsList"></div>
+    <div style="padding:0 14px;margin-top:8px">
+      <button class="add-goal-btn" onclick="showAddGoal()">+ Add Goal</button>
+    </div>
+    <div class="add-goal-form" id="addGoalForm" style="display:none">
+      <input type="text" id="newGoalTitle" placeholder="Goal name…">
+      <select id="newGoalType">
+        <option value="check">Checkbox</option>
+        <option value="progress">Progress counter</option>
+        <option value="streak">Streak (7 days)</option>
+      </select>
+      <input type="number" id="newGoalTarget" placeholder="Target (progress only)" min="1">
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button onclick="addGoal()">Add</button>
+        <button onclick="document.getElementById('addGoalForm').style.display='none'" style="background:transparent;border-color:var(--border2)">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS VIEW -->
+  <div class="view" id="view-settings">
+    <div class="view-title">Settings</div>
+    <div class="view-sub">Configure your JARVIS instance</div>
+
+    <div class="settings-section">
+      <div class="settings-label">Google Drive Integration</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-name">Drive File ID</div>
+            <div class="settings-desc">Paste the Google Drive file ID from your HealthExportCSV zip</div>
+          </div>
+        </div>
+        <input type="text" id="driveFileId" placeholder="1YC3e3hGBJcaixO288bkl…" class="settings-input">
+        <div class="settings-row" style="margin-top:8px">
+          <div class="settings-info">
+            <div class="settings-name">Google API Key</div>
+            <div class="settings-desc">From Google Cloud Console — Drive API enabled</div>
+          </div>
+        </div>
+        <input type="password" id="googleApiKey" placeholder="AIza…" class="settings-input">
+        <button class="settings-btn" onclick="saveCredentials()">Save & Test Connection</button>
+        <div id="driveStatus" style="font-family:var(--mono);font-size:10px;margin-top:8px;color:var(--text3)"></div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">Groq AI (Free)</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-name">Groq API Key</div>
+            <div class="settings-desc">Free at console.groq.com · 14,400 requests/day · Llama 3.3 70B</div>
+          </div>
+        </div>
+        <input type="password" id="groqKey" placeholder="gsk_…" class="settings-input">
+        <button class="settings-btn" onclick="saveGroqKey()">Save Key</button>
+        <a href="https://console.groq.com" target="_blank" class="settings-link">Get free Groq key → console.groq.com</a>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">Auto Sync Schedule</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-name">Sync on app open</div>
+            <div class="settings-desc">Automatically pull latest Drive file when you open JARVIS</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="autoSync" checked onchange="saveSetting('autoSync',this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">Body Stats</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-name">Biological Sex</div>
+            <div class="settings-desc">Used for accurate TDEE calculation</div>
+          </div>
+          <select id="bSex" onchange="saveSetting('sex',this.value);calcTDEE()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:6px;font-family:var(--mono);font-size:11px">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">App Info</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-name">JARVIS v1.0</div>
+            <div class="settings-desc">Built with HealthExportCSV + Google Drive + Gemini AI</div>
+          </div>
+        </div>
+        <button class="settings-btn" style="background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:#f87171;margin-top:8px" onclick="clearAllData()">Clear All Local Data</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <div class="ni active" id="nav-home" onclick="switchView('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    HOME
+  </div>
+  <div class="ni" id="nav-ai" onclick="switchView('ai')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+    ASK
+  </div>
+  <div class="ni" id="nav-goals" onclick="switchView('goals')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    GOALS
+  </div>
+  <div class="ni" id="nav-settings" onclick="switchView('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    SETTINGS
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/drive.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/groq.js"></script>
+<script src="js/goals.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
