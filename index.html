@@ -19,7 +19,6 @@
 
 <div class="app">
 
-  <!-- HEADER -->
   <div class="header">
     <div class="logo">
       <div class="logo-ring"></div>
@@ -40,7 +39,6 @@
     </button>
   </div>
 
-  <!-- HOME VIEW -->
   <div class="view active" id="view-home">
 
     <div class="status">
@@ -159,7 +157,6 @@
 
   </div>
 
-  <!-- AI CHAT VIEW -->
   <div class="view" id="view-ai">
     <div class="view-title">Ask JARVIS</div>
     <div class="view-sub">Powered by Gemini · knows your health, goals & context</div>
@@ -185,7 +182,6 @@
     </div>
   </div>
 
-  <!-- GOALS VIEW -->
   <div class="view" id="view-goals">
     <div class="view-title">Goals</div>
     <div class="view-sub">Track your daily habits and progress</div>
@@ -208,7 +204,6 @@
     </div>
   </div>
 
-  <!-- SETTINGS VIEW -->
   <div class="view" id="view-settings">
     <div class="view-title">Settings</div>
     <div class="view-sub">Configure your JARVIS instance</div>
@@ -223,13 +218,6 @@
           </div>
         </div>
         <input type="text" id="driveFileId" placeholder="1YC3e3hGBJcaixO288bkl…" class="settings-input">
-        <div class="settings-row" style="margin-top:8px">
-          <div class="settings-info">
-            <div class="settings-name">Google API Key</div>
-            <div class="settings-desc">From Google Cloud Console — Drive API enabled</div>
-          </div>
-        </div>
-        <input type="password" id="googleApiKey" placeholder="AIza…" class="settings-input">
         <button class="settings-btn" onclick="saveCredentials()">Save & Test Connection</button>
         <div id="driveStatus" style="font-family:var(--mono);font-size:10px;margin-top:8px;color:var(--text3)"></div>
       </div>
@@ -299,7 +287,6 @@
 
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bnav">
   <div class="ni active" id="nav-home" onclick="switchView('home')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
