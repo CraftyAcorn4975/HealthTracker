@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS">
+<meta name="theme-color" content="#0a0a0f">
+<title>JARVIS — Personal Intelligence</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#16161f;
+  --surface:#1a1a26;--surface2:#1f1f2e;
+  --border:rgba(139,92,246,0.15);--border2:rgba(139,92,246,0.3);
+  --accent:#8b5cf6;--accent2:#a78bfa;--accent3:#c4b5fd;
+  --teal:#2dd4bf;--teal2:#5eead4;--coral:#f87171;
+  --amber:#fbbf24;--green:#34d399;--blue:#60a5fa;
+  --text:#f1f0ff;--text2:#9d9db8;--text3:#5a5a7a;
+  --mono:'Space Mono',monospace;--display:'Syne',sans-serif;
+  --r:10px;--rlg:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;top:-20vh;left:50%;transform:translateX(-50%);width:100vw;height:50vh;background:radial-gradient(ellipse,rgba(139,92,246,.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+/* ── LAYOUT ── */
+.app{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 20px 140px}
+@media(max-width:600px){.app{padding:0 12px 140px}}
+
+/* ── HEADER ── */
+.header{padding:48px 0 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+@media(max-width:600px){.header{padding:44px 0 12px}}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-ring{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-ring::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);animation:pulse 2.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+.logo-text{font-size:18px;font-weight:800;letter-spacing:.1em}
+.logo-sub{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:.1em}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.status-pill{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:6px 12px;font-family:var(--mono);font-size:10px;color:var(--text3)}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--text3)}
+.sdot.live{background:var(--green);box-shadow:0 0 6px var(--green)}
+
+
+/* ── IMPORT TAB ── */
+.import-drop{border:1.5px dashed var(--border2);border-radius:var(--rlg);padding:32px 24px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .2s;background:rgba(139,92,246,.03)}
+.import-drop:hover,.import-drop.drag{border-color:var(--accent);background:rgba(139,92,246,.08)}
+.import-drop.loaded{border-color:var(--green);background:rgba(52,211,153,.04);border-style:solid}
+.import-icon{width:48px;height:48px;border-radius:12px;background:rgba(139,92,246,.12);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.import-drop.loaded .import-icon{background:rgba(52,211,153,.1)}
+.import-text strong{font-size:15px;font-weight:700;color:var(--text);display:block;margin-bottom:4px}
+.import-text span{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.import-log-line{font-family:var(--mono);font-size:11px;color:var(--text3);padding:3px 0;border-bottom:1px solid var(--border)}
+.import-log-line.ok{color:var(--green)}
+.import-log-line.warn{color:var(--amber)}
+.import-metric-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.import-metric-row span:first-child{color:var(--text2)}
+.import-metric-row span:last-child{font-family:var(--mono);font-size:12px;color:var(--text);font-weight:700}
+
+/* ── TWO COLUMN GRID (desktop) ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+
+/* ── SECTION LABEL ── */
+.slabel{font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--text3);margin-bottom:8px;text-transform:uppercase}
+
+/* ── ENERGY CARD ── */
+.energy-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:16px 18px;height:100%}
+.energy-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.energy-title{font-size:13px;font-weight:700;color:var(--text)}
+.energy-badge{font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:4px;background:rgba(90,90,122,.2);color:var(--text3)}
+.surplus{background:rgba(52,211,153,.12)!important;color:var(--green)!important}
+.deficit{background:rgba(248,113,113,.12)!important;color:var(--coral)!important}
+.energy-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.en-block{text-align:center}
+.en-val{font-size:20px;font-weight:800;font-family:var(--mono)}
+.en-lbl{font-size:9px;color:var(--text3);margin-top:2px}
+.energy-bar-wrap{height:5px;background:var(--bg3);border-radius:5px;overflow:hidden;margin-bottom:5px}
+.energy-bar{height:100%;border-radius:5px;transition:width .6s ease;background:var(--accent)}
+.energy-bar-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--text3)}
+.tdee-row{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.tdee-lbl{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.tdee-val{font-family:var(--mono);font-size:11px;color:var(--text2);font-weight:700;margin-top:2px}
+
+/* ── MACROS ── */
+.macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:400px){.macro-grid{grid-template-columns:repeat(2,1fr)}}
+.macro-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 10px;text-align:center}
+.macro-val{font-size:18px;font-weight:800;font-family:var(--mono)}
+.macro-unit{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.macro-lbl{font-size:10px;color:var(--text2);margin-top:3px}
+.macro-bar-wrap{height:3px;border-radius:3px;margin-top:7px;overflow:hidden;background:var(--bg3)}
+.macro-bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+
+/* ── VITALS GRID ── */
+.vitals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:400px){.vitals-grid{grid-template-columns:repeat(2,1fr)}}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 10px;position:relative;overflow:hidden}
+.sc::after{content:'';position:absolute;top:-10px;right:-10px;width:44px;height:44px;border-radius:50%;opacity:.08}
+.sc.sleep::after{background:var(--accent)}
+.sc.steps::after{background:var(--teal)}
+.sc.hrv::after{background:var(--coral)}
+.sc.rhr::after{background:var(--accent2)}
+.sc.body::after{background:var(--amber)}
+.sc.vo2::after{background:var(--blue)}
+.sc.exercise::after{background:var(--green)}
+.sc.dist::after{background:var(--teal2)}
+.sc.water::after{background:var(--blue)}
+.sc-icon{font-size:14px;display:block;margin-bottom:5px}
+.sc-val{font-size:22px;font-weight:800;line-height:1}
+.sc.sleep .sc-val{color:var(--accent3)}
+.sc.steps .sc-val{color:var(--teal2)}
+.sc.hrv .sc-val{color:var(--coral)}
+.sc.rhr .sc-val{color:var(--accent2)}
+.sc.body .sc-val{color:var(--amber)}
+.sc.vo2 .sc-val{color:var(--blue)}
+.sc.exercise .sc-val{color:var(--green)}
+.sc.dist .sc-val{color:var(--teal)}
+.sc.water .sc-val{color:var(--blue)}
+.sc-unit{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.sc-lbl{font-size:10px;color:var(--text2);margin-top:3px}
+
+/* ── AI CARDS ── */
+.ai-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:border-color .2s;height:100%}
+.ai-card:hover{border-color:var(--border2)}
+.ai-card-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ai-badge{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(139,92,246,.15);color:var(--accent3);flex-shrink:0}
+.ai-card-title{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.ai-tap{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.ai-card-body{font-size:12px;color:var(--text3);line-height:1.6}
+.ai-card-body.loaded{color:var(--text2)}
+.strain-score{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:5px 12px;background:var(--bg3);border-radius:6px;font-family:var(--mono);font-size:10px}
+.strain-num{font-size:18px;font-weight:800;color:var(--coral)}
+
+/* ── BODY STATS ── */
+.body-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:500px){.body-stats-grid{grid-template-columns:repeat(2,1fr)}}
+.bc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px}
+.bc input,.bc select{width:100%;background:transparent;border:none;outline:none;font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text);padding:0;-webkit-appearance:none}
+.bc select{font-size:11px;font-weight:400;color:var(--text2)}
+.bc select option{background:var(--bg3)}
+.bc-unit{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:2px}
+.bc-lbl{font-size:10px;color:var(--text2);margin-top:3px}
+
+/* ── GOALS ── */
+.goal-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.goal-row:hover{border-color:var(--border2)}
+.goal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.goal-info{flex:1}
+.goal-title{font-size:13px;font-weight:600;color:var(--text)}
+.goal-prog-bar{height:3px;background:var(--bg3);border-radius:3px;margin-top:6px;overflow:hidden}
+.goal-prog-fill{height:100%;border-radius:3px}
+.goal-sub{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px}
+.goal-check{width:26px;height:26px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;flex-shrink:0;transition:all .15s}
+.goal-check.done{border-color:var(--green);color:var(--green);background:rgba(52,211,153,.1)}
+.add-goal-btn{width:100%;padding:10px;border:1px dashed var(--border2);border-radius:var(--r);background:transparent;color:var(--text3);font-size:12px;font-family:var(--mono);cursor:pointer;margin-top:4px;transition:all .15s}
+.add-goal-btn:hover{border-color:var(--accent);color:var(--accent3)}
+.add-goal-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-top:8px;display:none}
+.add-goal-form input,.add-goal-form select{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:8px 10px;border-radius:6px;font-family:var(--mono);font-size:12px;outline:none;margin-bottom:8px;-webkit-appearance:none}
+.add-goal-form select option{background:var(--bg3)}
+.add-goal-form button{background:rgba(139,92,246,.15);border:1px solid var(--border2);color:var(--accent3);padding:8px 16px;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;margin-right:6px}
+
+/* ── CHAT ── */
+.chat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden}
+.chat-msgs{padding:14px;min-height:140px;max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.msg{display:flex;gap:8px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.mav{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.mav.ai{background:rgba(139,92,246,.2);color:var(--accent3);font-family:var(--mono)}
+.mav.user{background:rgba(45,212,191,.15);color:var(--teal2)}
+.mbub{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--text2);line-height:1.55;max-width:80%}
+.msg.user .mbub{background:rgba(139,92,246,.1);border-color:var(--border2);color:var(--text)}
+.mbub.typing span{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--text3);margin:0 2px;animation:bounce .9s ease-in-out infinite}
+.mbub.typing span:nth-child(2){animation-delay:.15s}
+.mbub.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+.chat-ir{display:flex;border-top:1px solid var(--border)}
+.chat-in{flex:1;background:transparent;border:none;outline:none;padding:12px 14px;color:var(--text);font-family:var(--display);font-size:13px}
+.chat-in::placeholder{color:var(--text3)}
+.chat-send{background:transparent;border:none;border-left:1px solid var(--border);padding:0 16px;cursor:pointer;color:var(--accent);font-size:18px;transition:color .15s}
+.chat-send:hover{color:var(--accent3)}
+.qbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.qbtn{font-family:var(--mono);font-size:9px;padding:5px 11px;border-radius:100px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
+.qbtn:hover{border-color:var(--accent);color:var(--accent3)}
+
+/* ── SETTINGS ── */
+.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.settings-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.settings-desc{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:10px}
+.settings-input{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:9px 12px;border-radius:6px;font-family:var(--mono);font-size:12px;outline:none;margin-bottom:8px}
+.settings-input:focus{border-color:var(--accent)}
+.settings-btn{background:rgba(139,92,246,.15);border:1px solid var(--border2);color:var(--accent3);padding:9px 18px;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s;width:100%}
+.settings-btn:hover{background:rgba(139,92,246,.25);border-color:var(--accent)}
+.settings-link{display:block;font-family:var(--mono);font-size:10px;color:var(--accent3);margin-top:10px;text-decoration:none}
+.settings-link:hover{color:var(--text)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between}
+.toggle{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:var(--bg3);border:1px solid var(--border2);border-radius:22px;transition:.3s}
+.slider:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:var(--text3);border-radius:50%;transition:.3s}
+input:checked+.slider{background:rgba(139,92,246,.2);border-color:var(--accent)}
+input:checked+.slider:before{transform:translateX(18px);background:var(--accent)}
+
+/* ── NAV ── */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;justify-content:center;gap:0;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:100}
+.ni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 28px;color:var(--text3);transition:color .15s;font-family:var(--mono);font-size:8px;letter-spacing:.05em;border:none;background:none}
+@media(max-width:400px){.ni{padding:4px 18px}}
+.ni.active{color:var(--accent3)}
+.ni svg{width:20px;height:20px}
+
+/* ── VIEWS ── */
+.view{display:none;animation:fadeIn .2s ease}
+.view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.view-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px;padding-top:4px}
+.view-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:16px}
+
+/* ── SECTION SPACING ── */
+.section{margin-bottom:20px}
+.section-inner{margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-ring"></div>
+      <div>
+        <div class="logo-text">JARVIS</div>
+        <div class="logo-sub">Personal Intelligence</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-pill">
+        <div class="sdot" id="sdot"></div>
+        <span id="statusTxt">No data loaded</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME VIEW -->
+  <div class="view active" id="view-home">
+<div class="upload-text">
+        <strong id="uploadTitle">Upload jarvis_health.json</strong>
+        <span id="uploadSub">Tap or drag your compressed health export here</span>
+      </div>
+    </div>
+
+    <!-- ENERGY + MACROS ROW -->
+    <div class="section">
+      <div class="slabel">// energy balance</div>
+      <div class="grid2">
+        <div class="energy-card">
+          <div class="energy-top">
+            <div class="energy-title">Today's Balance</div>
+            <div class="energy-badge" id="balBadge">—</div>
+          </div>
+          <div class="energy-nums">
+            <div class="en-block">
+              <div class="en-val" id="enEaten" style="color:var(--accent3)">—</div>
+              <div class="en-lbl">Eaten kcal</div>
+            </div>
+            <div class="en-block">
+              <div class="en-val" id="enBurned" style="color:var(--teal2)">—</div>
+              <div class="en-lbl">Burned kcal</div>
+            </div>
+            <div class="en-block">
+              <div class="en-val" id="enNet" style="color:var(--amber)">—</div>
+              <div class="en-lbl">Net</div>
+            </div>
+          </div>
+          <div class="energy-bar-wrap"><div class="energy-bar" id="enBar" style="width:0%"></div></div>
+          <div class="energy-bar-lbl"><span>0</span><span id="tdeeBarLbl">TDEE —</span></div>
+          <div class="tdee-row">
+            <div>
+              <div class="tdee-lbl">Est. TDEE (Mifflin-St Jeor)</div>
+              <div class="tdee-val" id="tdeeVal">Enter body stats ↓</div>
+            </div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-align:right">Maintenance<br>calories</div>
+          </div>
+        </div>
+        <div>
+          <div class="slabel">// macros</div>
+          <div class="macro-grid">
+            <div class="macro-card">
+              <div class="macro-val" style="color:#f87171" id="mProt">—</div>
+              <div class="macro-unit">g</div><div class="macro-lbl">Protein</div>
+              <div class="macro-bar-wrap"><div class="macro-bar-fill" id="mProtBar" style="background:#f87171;width:0%"></div></div>
+            </div>
+            <div class="macro-card">
+              <div class="macro-val" style="color:#fbbf24" id="mCarb">—</div>
+              <div class="macro-unit">g</div><div class="macro-lbl">Carbs</div>
+              <div class="macro-bar-wrap"><div class="macro-bar-fill" id="mCarbBar" style="background:#fbbf24;width:0%"></div></div>
+            </div>
+            <div class="macro-card">
+              <div class="macro-val" style="color:#a78bfa" id="mFat">—</div>
+              <div class="macro-unit">g</div><div class="macro-lbl">Fats</div>
+              <div class="macro-bar-wrap"><div class="macro-bar-fill" id="mFatBar" style="background:#a78bfa;width:0%"></div></div>
+            </div>
+            <div class="macro-card">
+              <div class="macro-val" style="color:#60a5fa" id="mWater">—</div>
+              <div class="macro-unit">fl oz</div><div class="macro-lbl">Water</div>
+              <div class="macro-bar-wrap"><div class="macro-bar-fill" id="mWaterBar" style="background:#60a5fa;width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VITALS -->
+    <div class="section">
+      <div class="slabel">// vitals</div>
+      <div class="vitals-grid">
+        <div class="sc sleep"><span class="sc-icon">🌙</span><div class="sc-val" id="vSleep">—</div><div class="sc-unit">hrs</div><div class="sc-lbl">Sleep</div></div>
+        <div class="sc steps"><span class="sc-icon">👟</span><div class="sc-val" id="vSteps">—</div><div class="sc-unit">steps</div><div class="sc-lbl">Steps</div></div>
+        <div class="sc rhr"><span class="sc-icon">❤️</span><div class="sc-val" id="vRHR">—</div><div class="sc-unit">bpm</div><div class="sc-lbl">Rest HR</div></div>
+        <div class="sc body"><span class="sc-icon">⚡</span><div class="sc-val" id="vBody">—</div><div class="sc-unit">% fat</div><div class="sc-lbl">Body Fat</div></div>
+        <div class="sc exercise"><span class="sc-icon">🏋️</span><div class="sc-val" id="vExercise">—</div><div class="sc-unit">mins</div><div class="sc-lbl">Exercise</div></div>
+        <div class="sc dist"><span class="sc-icon">📍</span><div class="sc-val" id="vDist">—</div><div class="sc-unit">km</div><div class="sc-lbl">Distance</div></div>
+      </div>
+    </div>
+
+    <!-- AI ANALYSIS -->
+    <div class="section">
+      <div class="slabel">// ai analysis</div>
+      <div class="grid2">
+        <div class="ai-card" onclick="runAnalysis('sleep')">
+          <div class="ai-card-hdr">
+            <span class="ai-badge">SLEEP</span>
+            <div class="ai-card-title">Sleep Summary</div>
+            <span class="ai-tap">tap to analyze</span>
+          </div>
+          <div class="ai-card-body" id="sleepSummary">Load data then tap to generate AI sleep analysis…</div>
+        </div>
+        <div class="ai-card" onclick="runAnalysis('workout')">
+          <div class="ai-card-hdr">
+            <span class="ai-badge" style="background:rgba(45,212,191,.12);color:var(--teal2)">WORKOUT</span>
+            <div class="ai-card-title">Latest Workout</div>
+            <span class="ai-tap">tap to analyze</span>
+          </div>
+          <div class="ai-card-body" id="workoutSummary">Load data then tap to generate AI workout summary…</div>
+          <div class="strain-score" id="strainWrap" style="display:none">
+            <span>Strain</span>
+            <span class="strain-num" id="strainNum">—</span>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text3)">/21</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BODY STATS -->
+    <div class="section">
+      <div class="slabel">// body stats (tdee)</div>
+      <div class="body-stats-grid">
+        <div class="bc"><input type="number" id="bAge" placeholder="—" oninput="calcTDEE()"><div class="bc-unit">yrs</div><div class="bc-lbl">Age</div></div>
+        <div class="bc"><input type="number" id="bWeight" placeholder="—" oninput="calcTDEE()"><div class="bc-unit">lbs</div><div class="bc-lbl">Weight</div></div>
+        <div class="bc"><input type="number" id="bHeight" placeholder="—" oninput="calcTDEE()"><div class="bc-unit">cm</div><div class="bc-lbl">Height</div></div>
+        <div class="bc">
+          <select id="bAct" onchange="calcTDEE()">
+            <option value="1.2">Sedentary</option>
+            <option value="1.375">Light</option>
+            <option value="1.55" selected>Moderate</option>
+            <option value="1.725">Active</option>
+            <option value="1.9">Very Active</option>
+          </select>
+          <div class="bc-lbl">Activity</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end home -->
+
+  <!-- ASK VIEW -->
+  <div class="view" id="view-ai">
+    <div class="view-title">Ask JARVIS</div>
+    <div class="view-sub">Powered by Groq · Llama 3.3 70B · knows your health data</div>
+    <div class="chat-box">
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="msg">
+          <div class="mav ai">J</div>
+          <div class="mbub">Hey. I'm JARVIS — load your health JSON on the home tab and I'll have all your data. Ask me anything.</div>
+        </div>
+      </div>
+      <div class="chat-ir">
+        <input class="chat-in" id="chatIn" placeholder="Ask anything about your health data…" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="chat-send" onclick="sendChat()">↑</button>
+      </div>
+    </div>
+    <div class="qbtns">
+      <button class="qbtn" onclick="quickAsk('How is my recovery today based on my sleep and resting HR?')">Recovery?</button>
+      <button class="qbtn" onclick="quickAsk('Am I in a calorie deficit or surplus today?')">Deficit?</button>
+      <button class="qbtn" onclick="quickAsk('What should I focus on today to optimize my performance?')">Today focus?</button>
+      <button class="qbtn" onclick="quickAsk('Analyze my workout and give me feedback.')">Workout?</button>
+    </div>
+  </div>
+
+  <!-- GOALS VIEW -->
+  <div class="view" id="view-goals">
+    <div class="view-title">Goals</div>
+    <div class="view-sub">Track your daily habits and progress</div>
+    <div id="goalsList"></div>
+    <button class="add-goal-btn" onclick="showAddGoal()">+ Add Goal</button>
+    <div class="add-goal-form" id="addGoalForm">
+      <input type="text" id="newGoalTitle" placeholder="Goal name…">
+      <select id="newGoalType">
+        <option value="check">Checkbox</option>
+        <option value="progress">Progress counter</option>
+        <option value="streak">Streak (7 days)</option>
+      </select>
+      <input type="number" id="newGoalTarget" placeholder="Target number (progress only)" min="1">
+      <div style="display:flex;gap:8px">
+        <button onclick="addGoal()">Add</button>
+        <button onclick="document.getElementById('addGoalForm').style.display='none'" style="background:transparent;border-color:var(--border2)">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS VIEW -->
+  <div class="view" id="view-settings">
+    <div class="view-title">Settings</div>
+    <div class="view-sub">Configure JARVIS</div>
+
+    <div class="settings-card">
+      <div class="settings-name">Groq API Key</div>
+      <div class="settings-desc">Free at console.groq.com · 14,400 requests/day · powers all AI features</div>
+      <input type="password" id="groqKey" placeholder="gsk_…" class="settings-input">
+      <button class="settings-btn" onclick="saveGroqKey()">Save Key</button>
+      <a href="https://console.groq.com" target="_blank" class="settings-link">Get your free Groq key → console.groq.com</a>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-name">Biological Sex</div>
+      <div class="settings-desc">Used for accurate TDEE calculation (Mifflin-St Jeor formula)</div>
+      <select id="bSex" onchange="localStorage.setItem('j_sex',this.value);calcTDEE()" style="width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:9px 12px;border-radius:6px;font-family:var(--mono);font-size:12px;outline:none;-webkit-appearance:none">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-name">App Info</div>
+      <div class="settings-desc">JARVIS v1.0 · HealthExportCSV + Groq AI · No data ever leaves your device</div>
+      <button onclick="if(confirm('Clear all saved data?')){localStorage.clear();location.reload()}" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#f87171;padding:9px 18px;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;width:100%;margin-top:8px">Clear All Local Data</button>
+    </div>
+  </div>
+
+  <!-- IMPORT VIEW -->
+  <div class="view" id="view-import">
+    <div class="view-title">Import</div>
+    <div class="view-sub">Drop your HealthExportCSV ZIP — parsed instantly in the browser</div>
+
+    <div class="import-drop" id="importDrop"
+      onclick="document.getElementById('zipInput').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleZipDrop(event)">
+      <input type="file" id="zipInput" accept=".zip" style="display:none" onchange="handleZipFile(event)">
+      <div class="import-icon" id="importIcon">📦</div>
+      <div class="import-text">
+        <strong id="importTitle">Drop ZIP or tap to browse</strong>
+        <span id="importSub">HealthExportCSV export · parsed locally · no upload needed</span>
+      </div>
+    </div>
+
+    <div class="import-log" id="importLog" style="display:none">
+      <div class="slabel" style="margin-top:20px">// import log</div>
+      <div id="importLogLines"></div>
+    </div>
+
+    <div id="importResult" style="display:none;margin-top:20px">
+      <div class="slabel">// extracted metrics</div>
+      <div id="importMetrics"></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button onclick="switchView('home')" style="flex:1;padding:12px;background:rgba(139,92,246,.2);border:1px solid var(--border2);color:var(--accent3);border-radius:var(--r);font-family:var(--mono);font-size:12px;cursor:pointer;">View Dashboard →</button>
+        <button onclick="clearHealthData()" style="padding:12px 16px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#f87171;border-radius:var(--r);font-family:var(--mono);font-size:12px;cursor:pointer;">Clear</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end app -->
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="ni active" id="nav-home" onclick="switchView('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    HOME
+  </button>
+  <button class="ni" id="nav-ai" onclick="switchView('ai')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+    ASK
+  </button>
+  <button class="ni" id="nav-goals" onclick="switchView('goals')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    GOALS
+  </button>
+  <button class="ni" id="nav-import" onclick="switchView('import')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    IMPORT
+  </button>
+  <button class="ni" id="nav-settings" onclick="switchView('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    SETTINGS
+  </button>
+</div>
+
+<script>
+// ── STATE ──
+let healthData = null;
+let chatHistory = [];
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+
+const DEFAULT_GOALS = [
+  {id:1,title:'Workout session',type:'streak',progress:5,total:7,color:'#2dd4bf',done:false},
+  {id:2,title:'Drink 8 glasses of water',type:'check',progress:0,total:1,color:'#8b5cf6',done:false},
+  {id:3,title:'Read for 30 min',type:'check',progress:0,total:1,color:'#a78bfa',done:false},
+  {id:4,title:'Meditate',type:'progress',progress:4,total:7,color:'#fbbf24',done:false},
+  {id:5,title:'Call a friend',type:'check',progress:0,total:1,color:'#f87171',done:false},
+];
+let goals = [];
+let nextGoalId = 100;
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  // Restore body stats
+  ['bAge','bWeight','bHeight','bAct'].forEach(id => {
+    const v = localStorage.getItem('j_'+id);
+    if (v && document.getElementById(id)) document.getElementById(id).value = v;
+  });
+  const sx = document.getElementById('bSex');
+  if (sx) sx.value = localStorage.getItem('j_sex') || 'male';
+  const gk = document.getElementById('groqKey');
+  if (gk && localStorage.getItem('j_groqKey')) gk.value = localStorage.getItem('j_groqKey');
+  calcTDEE();
+
+  // Load goals
+  const saved = JSON.parse(localStorage.getItem('j_goals') || '[]');
+  goals = saved.length ? saved : [...DEFAULT_GOALS];
+  nextGoalId = Math.max(...goals.map(g=>g.id), 99) + 1;
+
+  // Restore last health data
+  const lastData = localStorage.getItem('j_lastHealth');
+  if (lastData) {
+    try { populateData(JSON.parse(lastData)); } catch(e) {}
+  }
+});
+
+// ── VIEWS ──
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  if (name==='goals') renderGoals();
+}
+
+// ── FILE UPLOAD ──
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (file) readJSON(file);
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) readJSON(file);
+}
+function readJSON(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      populateData(data);
+      localStorage.setItem('j_lastHealth', ev.target.result);
+    } catch(err) {
+      alert('Could not parse file. Make sure it is a valid jarvis_health.json');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── POPULATE DATA ──
+function populateData(data) {
+  healthData = data;
+  const m = data.metrics || {};
+
+  const set = (id, val, fmt) => {
+    const el = document.getElementById(id);
+    if (el && val != null && !isNaN(val)) el.textContent = fmt ? fmt(val) : Math.round(val);
+  };
+
+  // Sleep
+  if (data.sleep != null) {
+    document.getElementById('vSleep').textContent = parseFloat(data.sleep).toFixed(1);
+  }
+
+  // Vitals
+  set('vSteps', m.stepCount, v => v > 999 ? (v/1000).toFixed(1)+'k' : Math.round(v));
+  set('vRHR',   m.restingHR, Math.round);
+  set('vBody',  m.bodyFatPct, v => parseFloat(v).toFixed(1));
+  set('vExercise', m.exerciseMins, Math.round);
+  set('vDist',  m.distanceKm, v => parseFloat(v).toFixed(2));
+
+  // Energy — use logged cals, fallback to macro estimate (protein+carbs=4kcal/g, fat=9kcal/g)
+  const macroCals = ((m.protein||0)*4) + ((m.carbs||0)*4) + ((m.fat||0)*9);
+  const eaten  = m.dietaryCalories || (macroCals > 0 ? macroCals : 0);
+  const burned = m.activeEnergy || 0;
+  if (eaten)  document.getElementById('enEaten').textContent  = Math.round(eaten).toLocaleString() + (m.dietaryCalories ? '' : ' ~');
+  if (burned) document.getElementById('enBurned').textContent = Math.round(burned).toLocaleString();
+
+  // Macros
+  const macros = [
+    {id:'mProt',  barId:'mProtBar',  key:'protein', max:200},
+    {id:'mCarb',  barId:'mCarbBar',  key:'carbs',   max:400},
+    {id:'mFat',   barId:'mFatBar',   key:'fat',     max:150},
+    {id:'mWater', barId:'mWaterBar', key:'water',   max:200},
+  ];
+  macros.forEach(({id,barId,key,max}) => {
+    const v = m[key];
+    if (v != null) {
+      document.getElementById(id).textContent = Math.round(v);
+      document.getElementById(barId).style.width = Math.min(100,(v/max)*100)+'%';
+    }
+  });
+
+  // Auto-populate weight if present
+  if (m.weightLbs && !document.getElementById('bWeight').value) {
+    document.getElementById('bWeight').value = Math.round(m.weightLbs);
+    localStorage.setItem('j_bWeight', Math.round(m.weightLbs));
+  }
+
+  calcTDEE();
+  updateBalance();
+
+  // Update UI
+  const zone = document.getElementById('uploadZone');
+  zone.classList.add('loaded');
+  document.getElementById('uploadIcon').textContent = '✅';
+  document.getElementById('uploadTitle').textContent = `Loaded · ${data.date || 'today'}`;
+  document.getElementById('uploadSub').textContent = `${Object.keys(m).length} metrics · tap to reload`;
+  document.getElementById('sdot').classList.add('live');
+  document.getElementById('statusTxt').textContent = `Synced · ${data.date || 'today'}`;
+}
+
+// ── TDEE & BALANCE ──
+function calcTDEE() {
+  const age  = parseFloat(document.getElementById('bAge')?.value);
+  const wlbs = parseFloat(document.getElementById('bWeight')?.value);
+  const hcm  = parseFloat(document.getElementById('bHeight')?.value);
+  const act  = parseFloat(document.getElementById('bAct')?.value || '1.55');
+  const sex  = document.getElementById('bSex')?.value || localStorage.getItem('j_sex') || 'male';
+  ['bAge','bWeight','bHeight','bAct'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el?.value) localStorage.setItem('j_'+id, el.value);
+  });
+  if (!age || !wlbs || !hcm) return;
+  const wkg = wlbs * 0.453592;
+  const bmr = sex === 'female'
+    ? (10*wkg)+(6.25*hcm)-(5*age)-161
+    : (10*wkg)+(6.25*hcm)-(5*age)+5;
+  const tdee = Math.round(bmr * act);
+  document.getElementById('tdeeVal').textContent = tdee.toLocaleString()+' kcal/day';
+  document.getElementById('tdeeBarLbl').textContent = 'TDEE '+tdee.toLocaleString();
+  updateBalance(tdee);
+}
+
+function updateBalance(tdee) {
+  const eaten  = parseInt((document.getElementById('enEaten')?.textContent||'0').replace(/\D/g,''))||0;
+  const burned = parseInt((document.getElementById('enBurned')?.textContent||'0').replace(/\D/g,''))||0;
+  if (!eaten && !burned) return;
+  const net = eaten - burned;
+  document.getElementById('enNet').textContent = (net>0?'+':'')+net.toLocaleString();
+  const badge = document.getElementById('balBadge');
+  if (net > 0) { badge.textContent='+'+net.toLocaleString()+' surplus'; badge.className='energy-badge surplus'; }
+  else         { badge.textContent=Math.abs(net).toLocaleString()+' deficit'; badge.className='energy-badge deficit'; }
+  if (!tdee) { const tv=document.getElementById('tdeeVal')?.textContent; tdee=parseInt((tv||'').replace(/\D/g,''))||0; }
+  if (tdee > 0 && eaten > 0) {
+    const pct = Math.min(120,(eaten/tdee)*100);
+    const bar = document.getElementById('enBar');
+    bar.style.width = pct+'%';
+    bar.style.background = pct>110?'var(--coral)':pct<80?'var(--teal)':'var(--accent)';
+  }
+}
+
+// ── GROQ AI ──
+function buildContext() {
+  if (!healthData) return 'No health data loaded yet.';
+  const m = healthData.metrics || {};
+  const w = healthData.workouts?.[0] || null;
+  return `Health data for ${healthData.date}:
+- Sleep: ${healthData.sleep ? parseFloat(healthData.sleep).toFixed(1)+' hrs' : 'unknown'}
+- Steps: ${m.stepCount ? Math.round(m.stepCount).toLocaleString() : 'unknown'}
+- Resting HR: ${m.restingHR ? Math.round(m.restingHR)+' bpm' : 'unknown'}
+- Active calories burned: ${m.activeEnergy ? Math.round(m.activeEnergy)+' kcal' : 'unknown'}
+- Calories eaten: ${m.dietaryCalories ? Math.round(m.dietaryCalories)+' kcal (logged)' : (m.protein||m.carbs||m.fat) ? Math.round(((m.protein||0)*4)+((m.carbs||0)*4)+((m.fat||0)*9))+' kcal (estimated from macros)' : 'unknown'}
+- Protein: ${m.protein ? Math.round(m.protein)+'g' : 'unknown'}
+- Carbs: ${m.carbs ? Math.round(m.carbs)+'g' : 'unknown'}
+- Fat: ${m.fat ? Math.round(m.fat)+'g' : 'unknown'}
+- Water: ${m.water ? Math.round(m.water)+' fl oz' : 'unknown'}
+- Body fat: ${m.bodyFatPct ? parseFloat(m.bodyFatPct).toFixed(1)+'%' : 'unknown'}
+- Weight: ${m.weightLbs ? Math.round(m.weightLbs)+' lbs' : 'unknown'}
+- Exercise time: ${m.exerciseMins ? Math.round(m.exerciseMins)+' mins' : 'unknown'}
+- Distance: ${m.distanceKm ? parseFloat(m.distanceKm).toFixed(2)+' km' : 'unknown'}
+- TDEE estimate: ${document.getElementById('tdeeVal')?.textContent || 'unknown'}
+- Latest workout: ${w ? w.type+' · '+w.durationMins+' mins · '+w.date : 'none'}`;
+}
+
+async function callGroq(messages, system) {
+  const key = localStorage.getItem('j_groqKey');
+  if (!key) throw new Error('No Groq key — go to Settings and add your free key from console.groq.com');
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+key },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      max_tokens: 700,
+      temperature: 0.7,
+      messages: [{ role:'system', content:system }, ...messages]
+    })
+  });
+  if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e?.error?.message||'Groq error '+res.status); }
+  const d = await res.json();
+  return d.choices?.[0]?.message?.content || 'No response.';
+}
+
+async function runAnalysis(type) {
+  const ctx = buildContext();
+  if (type === 'sleep') {
+    const el = document.getElementById('sleepSummary');
+    el.textContent = 'Analyzing…'; el.classList.remove('loaded');
+    try {
+      const r = await callGroq(
+        [{role:'user',content:'Analyze my sleep and recovery. '+ctx}],
+        'You are JARVIS, a sharp personal health AI. Give a 3-sentence sleep analysis: quality assessment, recovery impact, one specific recommendation. Be direct and data-driven.'
+      );
+      el.textContent = r; el.classList.add('loaded');
+    } catch(e) { el.textContent = '⚠ '+e.message; }
+  } else {
+    const el = document.getElementById('workoutSummary');
+    el.textContent = 'Analyzing…'; el.classList.remove('loaded');
+    try {
+      const r = await callGroq(
+        [{role:'user',content:'Analyze my workout and give a strain score. '+ctx}],
+        'You are JARVIS. Give a 3-sentence workout analysis. Then on a NEW LINE output exactly: STRAIN_SCORE: [1-21] based on exertion. Be direct.'
+      );
+      const match = r.match(/STRAIN_SCORE:\s*(\d+(?:\.\d+)?)/i);
+      const body = r.replace(/STRAIN_SCORE:.*$/im,'').trim();
+      el.textContent = body; el.classList.add('loaded');
+      if (match) {
+        document.getElementById('strainNum').textContent = parseFloat(match[1]).toFixed(1);
+        document.getElementById('strainWrap').style.display = 'inline-flex';
+      }
+    } catch(e) { el.textContent = '⚠ '+e.message; }
+  }
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatIn');
+  const msg = input.value.trim(); if (!msg) return;
+  input.value = '';
+  addMsg('user', msg);
+  chatHistory.push({role:'user',content:msg});
+  const typing = addTyping();
+  try {
+    const system = `You are JARVIS, a sharp personal health intelligence assistant. Be direct, analytical, concise — max 4 sentences unless asked for more. No filler.\n\n${buildContext()}`;
+    const reply = await callGroq(chatHistory, system);
+    typing.remove(); addMsg('ai', reply);
+    chatHistory.push({role:'assistant',content:reply});
+    if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+  } catch(e) { typing.remove(); addMsg('ai','⚠ '+e.message); }
+}
+
+function quickAsk(q) {
+  switchView('ai');
+  setTimeout(() => { document.getElementById('chatIn').value = q; sendChat(); }, 100);
+}
+
+function addMsg(role, text) {
+  const msgs = document.getElementById('chatMsgs');
+  const d = document.createElement('div');
+  d.className = 'msg '+role;
+  d.innerHTML = `<div class="mav ${role}">${role==='ai'?'J':'ME'}</div><div class="mbub">${text.replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; return d;
+}
+function addTyping() {
+  const msgs = document.getElementById('chatMsgs');
+  const d = document.createElement('div');
+  d.className = 'msg';
+  d.innerHTML = '<div class="mav ai">J</div><div class="mbub typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; return d;
+}
+
+// ── GOALS ──
+function renderGoals() {
+  document.getElementById('goalsList').innerHTML = goals.map(g => {
+    const pct = Math.min(100,Math.round((g.progress/g.total)*100));
+    return `<div class="goal-row" onclick="toggleGoal(${g.id})">
+      <div class="goal-dot" style="background:${g.color}"></div>
+      <div class="goal-info">
+        <div class="goal-title" style="${g.done?'text-decoration:line-through;opacity:.5':''}">${g.title}</div>
+        <div class="goal-prog-bar"><div class="goal-prog-fill" style="width:${pct}%;background:${g.color}"></div></div>
+        <div class="goal-sub">${g.progress}/${g.total}${g.type==='streak'?' days':g.type==='progress'?' done':''}</div>
+      </div>
+      <div class="goal-check${g.done?' done':''}">✓</div>
+    </div>`;
+  }).join('');
+}
+function toggleGoal(id) {
+  const g = goals.find(x=>x.id===id); if (!g) return;
+  if (g.type==='check') { g.done=!g.done; g.progress=g.done?1:0; }
+  else { g.progress=Math.min(g.total,g.progress+1); g.done=g.progress>=g.total; }
+  localStorage.setItem('j_goals', JSON.stringify(goals));
+  renderGoals();
+}
+function showAddGoal() {
+  const f = document.getElementById('addGoalForm');
+  f.style.display = f.style.display==='none'?'block':'none';
+}
+function addGoal() {
+  const title = document.getElementById('newGoalTitle').value.trim(); if (!title) return;
+  const type   = document.getElementById('newGoalType').value;
+  const target = parseInt(document.getElementById('newGoalTarget').value)||(type==='streak'?7:1);
+  const colors = ['#2dd4bf','#8b5cf6','#f87171','#fbbf24','#34d399','#60a5fa','#a78bfa'];
+  goals.push({id:nextGoalId++,title,type,progress:0,total:target,color:colors[nextGoalId%colors.length],done:false});
+  localStorage.setItem('j_goals', JSON.stringify(goals));
+  document.getElementById('newGoalTitle').value='';
+  document.getElementById('newGoalTarget').value='';
+  document.getElementById('addGoalForm').style.display='none';
+  renderGoals();
+}
+
+
+// ── ZIP IMPORT ──
+// Handles HealthExportCSV format:
+// Filenames contain full HK identifier e.g. HKQuantityTypeIdentifierActiveEnergyBurned_2026-...csv
+// CSV columns: type, sourceName, sourceVersion, productType, device, startDate, endDate, unit, value
+
+const HK_METRICS = {
+  bodyFatPct:      'BodyFatPercentage',
+  weightLbs:       'BodyMass',
+  heightCm:        'Height',
+  leanMassKg:      'LeanBodyMass',
+  bmi:             'BodyMassIndex',
+  restingHR:       'RestingHeartRate',
+  hrv:             'HeartRateVariabilitySDNN',
+  vo2Max:          'VO2Max',
+  stepCount:       'StepCount',
+  activeEnergy:    'ActiveEnergyBurned',
+  basalEnergy:     'BasalEnergyBurned',
+  exerciseMins:    'AppleExerciseTime',
+  distanceKm:      'DistanceWalkingRunning',
+  dietaryCalories: 'DietaryEnergyConsumed',
+  protein:         'DietaryProtein',
+  carbs:           'DietaryCarbohydrates',
+  fat:             'DietaryFatTotal',
+  water:           'DietaryWater',
+  sodium:          'DietarySodium',
+};
+
+const SUM_TODAY = new Set(['stepCount','activeEnergy','basalEnergy','exerciseMins','distanceKm','dietaryCalories','protein','carbs','fat','water','sodium']);
+
+function handleZipDrop(e) {
+  e.preventDefault();
+  document.getElementById('importDrop').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) processZip(file);
+}
+function handleZipFile(e) {
+  const file = e.target.files[0];
+  if (file) processZip(file);
+}
+
+async function processZip(file) {
+  const drop       = document.getElementById('importDrop');
+  const logDiv     = document.getElementById('importLog');
+  const logLines   = document.getElementById('importLogLines');
+  const resultDiv  = document.getElementById('importResult');
+  const metricsDiv = document.getElementById('importMetrics');
+
+  logDiv.style.display    = 'block';
+  resultDiv.style.display = 'none';
+  logLines.innerHTML      = '';
+  metricsDiv.innerHTML    = '';
+  drop.classList.remove('loaded');
+  document.getElementById('importIcon').textContent  = '⏳';
+  document.getElementById('importTitle').textContent = 'Processing…';
+
+  const log = (msg, type) => {
+    const d = document.createElement('div');
+    d.className = 'import-log-line ' + (type||'');
+    d.textContent = msg;
+    logLines.appendChild(d);
+  };
+
+  try {
+    log('Reading ZIP…');
+    const buffer = await file.arrayBuffer();
+    let csvMap = await unzipAll(buffer);
+    log('Entries found: ' + Object.keys(csvMap).length);
+
+    // Handle zip-inside-zip
+    for (const [name, data] of Object.entries(csvMap)) {
+      if (name.endsWith('.zip') && data instanceof ArrayBuffer) {
+        log('Opening inner ZIP: ' + name.split('/').pop());
+        const inner = await unzipAll(data);
+        Object.assign(csvMap, inner);
+        delete csvMap[name];
+      }
+    }
+
+    const csvFiles = Object.keys(csvMap).filter(k => typeof csvMap[k] === 'string');
+    log('CSV files: ' + csvFiles.length, 'ok');
+    if (!csvFiles.length) { log('No CSVs found - check ZIP format', 'warn'); return; }
+    csvFiles.slice(0,3).forEach(f => log('  ' + f.split('/').pop().slice(0,70)));
+
+    const today = new Date().toISOString().slice(0,10);
+    const out = { generated: new Date().toISOString().slice(0,19), date: today, metrics: {}, sleep: null, workouts: [] };
+
+    for (const [key, hkId] of Object.entries(HK_METRICS)) {
+      const csvKey = csvFiles.find(k => k.includes(hkId));
+      if (!csvKey) continue;
+      const rows = parseHKCSV(csvMap[csvKey]);
+      if (!rows.length) continue;
+      let val = SUM_TODAY.has(key) ? (sumRows(rows, today) ?? sumLast24h(rows)) : latestVal(rows);
+      if (val === null || val === undefined) continue;
+      if (key === 'weightLbs') { const u = (rows[rows.length-1].unit||'').toLowerCase(); if (u.includes('kg') || val < 100) val *= 2.20462; }
+      if (key === 'bodyFatPct' && val < 1) val *= 100;
+      if (key === 'heightCm'   && val < 3) val *= 100;
+      if (key === 'water') {
+        // Only convert if unit is litres - MacrosFirst logs in fl_oz_us directly
+        const wUnit = (rows[rows.length-1].unit||rows[0].unit||'').toLowerCase();
+        if (wUnit.includes('l') && !wUnit.includes('fl') && !wUnit.includes('oz')) {
+          val *= 33.814; // L to fl oz
+        }
+        // already fl_oz_us - no conversion needed
+      }
+      out.metrics[key] = Math.round(val * 100) / 100;
+      log('✓ ' + key + ': ' + out.metrics[key], 'ok');
+    }
+
+    const p = out.metrics.protein||0, c = out.metrics.carbs||0, f = out.metrics.fat||0;
+    if (p||c||f) { out.metrics.macroCals = Math.round(p*4+c*4+f*9); log('✓ macroCals: ' + out.metrics.macroCals, 'ok'); }
+
+    const sleepKey = csvFiles.find(k => k.includes('SleepAnalysis'));
+    if (sleepKey) {
+      const rows = parseHKCSV(csvMap[sleepKey]);
+      const cutoff = Date.now() - 20*3600000;
+      const recent = rows.filter(r => parseHKDate(r.enddate||r.endDate) > cutoff);
+      const src = recent.length ? recent : rows.slice(-30);
+      let secs = 0;
+      src.forEach(r => { const diff = parseHKDate(r.enddate||r.endDate) - parseHKDate(r.startdate||r.startDate); if (diff>0&&diff<86400000) secs+=diff/1000; });
+      if (secs > 0) { out.sleep = Math.round(secs/3600*100)/100; log('✓ sleep: ' + out.sleep + ' hrs', 'ok'); }
+    }
+
+    const wKeys = csvFiles.filter(k => k.includes('HKWorkoutActivity'));
+    wKeys.forEach(wk => {
+      const rows = parseHKCSV(csvMap[wk]);
+      const stem = wk.split('/').pop();
+      const m = stem.match(/HKWorkoutActivityType([A-Za-z]+)_/);
+      const type = m ? m[1] : 'Unknown';
+      rows.slice(-3).forEach(r => {
+        const s = parseHKDate(r.startdate||r.startDate), e = parseHKDate(r.enddate||r.endDate);
+        const mins = e > s ? Math.round((e-s)/60000*10)/10 : null;
+        out.workouts.push({ type, date: (r.startdate||r.startDate||'').slice(0,10), durationMins: mins });
+      });
+    });
+    out.workouts.sort((a,b)=>b.date>a.date?1:-1);
+    out.workouts = out.workouts.slice(0,10);
+    if (out.workouts.length) log('✓ ' + out.workouts.length + ' workout entries', 'ok');
+
+    const metricCount = Object.keys(out.metrics).length;
+    log('Import complete — ' + metricCount + ' metrics', 'ok');
+
+    const labels = {sleep:'Sleep',stepCount:'Steps',restingHR:'Resting HR',hrv:'HRV',bodyFatPct:'Body Fat',weightLbs:'Weight',activeEnergy:'Cal Burned',dietaryCalories:'Cal Eaten',macroCals:'Cal (macro est.)',protein:'Protein',carbs:'Carbs',fat:'Fat',water:'Water',exerciseMins:'Exercise',distanceKm:'Distance',vo2Max:'VO2 Max'};
+    const units  = {sleep:'hrs',stepCount:'steps',restingHR:'bpm',hrv:'ms',bodyFatPct:'%',weightLbs:'lbs',activeEnergy:'kcal',dietaryCalories:'kcal',macroCals:'kcal',protein:'g',carbs:'g',fat:'g',water:'fl oz',exerciseMins:'mins',distanceKm:'km',vo2Max:'ml/kg/min'};
+    ['sleep','stepCount','restingHR','bodyFatPct','weightLbs','activeEnergy','dietaryCalories','macroCals','protein','carbs','fat','water','exerciseMins'].forEach(k => {
+      const v = k==='sleep' ? out.sleep : out.metrics[k];
+      if (v==null) return;
+      const row = document.createElement('div');
+      row.className='import-metric-row';
+      row.innerHTML = '<span>' + (labels[k]||k) + '</span><span>' + v + ' ' + (units[k]||'') + '</span>';
+      metricsDiv.appendChild(row);
+    });
+
+    resultDiv.style.display='block';
+    drop.classList.add('loaded');
+    document.getElementById('importIcon').textContent  = '✅';
+    document.getElementById('importTitle').textContent = 'Imported · ' + today;
+    document.getElementById('importSub').textContent   = metricCount + ' metrics from ' + csvFiles.length + ' files';
+    localStorage.setItem('j_lastHealth', JSON.stringify(out));
+    populateData(out);
+
+  } catch(err) {
+    log('Error: ' + err.message, 'warn');
+    document.getElementById('importIcon').textContent  = '❌';
+    document.getElementById('importTitle').textContent = 'Import failed';
+    console.error(err);
+  }
+}
+
+function parseHKCSV(text) {
+  if (!text || typeof text !== 'string') return [];
+  const clean = text.replace(/^\uFEFF/,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  const lines = clean.split('\n').filter(l => l.trim() && !l.startsWith('sep='));
+  if (lines.length < 2) return [];
+  const sep = lines[0].includes('\t') ? '\t' : ',';
+  const headers = lines[0].split(sep).map(h => h.trim().replace(/"/g,'').toLowerCase());
+  const valueIdx = headers.indexOf('value');
+  if (valueIdx === -1) return [];
+  return lines.slice(1).map(line => {
+    const vals = sep==='\t' ? line.split('\t') : splitCSVLine(line);
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = (vals[i]||'').trim().replace(/^"|"$/g,''));
+    return obj;
+  }).filter(r => r.value && !isNaN(parseFloat(r.value)));
+}
+
+function splitCSVLine(line) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i=0; i<line.length; i++) {
+    if (line[i]==='"') { inQ=!inQ; }
+    else if (line[i]===',' && !inQ) { result.push(cur); cur=''; }
+    else cur+=line[i];
+  }
+  result.push(cur); return result;
+}
+
+function parseHKDate(str) {
+  if (!str) return 0;
+  // Format: "2026-05-26 00:46:33 +0000"
+  const d = new Date(str.trim().replace(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) ([+-]\d{4})/, '$1T$2$3'));
+  return isNaN(d.getTime()) ? new Date(str.trim()).getTime() : d.getTime();
+}
+
+function latestVal(rows) {
+  const sorted = [...rows].sort((a,b) => parseHKDate(b.enddate||b.endDate||b.startdate||b.startDate) - parseHKDate(a.enddate||a.endDate||a.startdate||a.startDate));
+  const v = parseFloat(sorted[0]?.value);
+  return isNaN(v) ? null : v;
+}
+
+function sumRows(rows, today) {
+  // Convert each row's startDate to local date string for comparison
+  // HK dates are like "2026-05-26 00:46:33 +0000" — parse then localise
+  const t = rows.filter(r => {
+    const raw = r.startdate||r.startDate||'';
+    if (!raw) return false;
+    // Fast check: if string starts with today, use it directly
+    if (raw.startsWith(today)) return true;
+    // Otherwise parse as date and compare local date
+    const ts = parseHKDate(raw);
+    if (!ts) return false;
+    return new Date(ts).toLocaleDateString('en-CA') === today; // en-CA gives YYYY-MM-DD
+  });
+  // Fallback: if nothing matches today, try last 24h
+  if (!t.length) return null;
+  return t.reduce((a,r)=>a+(parseFloat(r.value)||0),0);
+}
+
+function sumLast24h(rows) {
+  const cutoff = Date.now() - 48*3600000; // extend to 48h to catch timezone edge cases
+  const recent = rows.filter(r => parseHKDate(r.startdate||r.startDate) > cutoff);
+  if (!recent.length) {
+    // Last resort: sum all rows (for small datasets like nutrition)
+    const all = rows.filter(r => !isNaN(parseFloat(r.value)));
+    if (!all.length) return null;
+    return all.reduce((a,r)=>a+(parseFloat(r.value)||0),0);
+  }
+  return recent.reduce((a,r)=>a+(parseFloat(r.value)||0),0);
+}
+
+async function unzipAll(buffer) {
+  const view=new DataView(buffer), bytes=new Uint8Array(buffer), out={};
+  let offset=0;
+  while (offset < bytes.length-4) {
+    if (view.getUint32(offset,true) !== 0x04034b50) { offset++; continue; }
+    const compression=view.getUint16(offset+8,true);
+    const compSize=view.getUint32(offset+18,true);
+    const fnLen=view.getUint16(offset+26,true);
+    const extraLen=view.getUint16(offset+28,true);
+    const filename=new TextDecoder().decode(bytes.slice(offset+30,offset+30+fnLen));
+    const dataStart=offset+30+fnLen+extraLen;
+    const compData=bytes.slice(dataStart,dataStart+compSize);
+    if (compSize>0 && !filename.endsWith('/')) {
+      try {
+        let result;
+        if (compression===8) {
+          const ds=new DecompressionStream('deflate-raw');
+          const writer=ds.writable.getWriter(), reader=ds.readable.getReader();
+          writer.write(compData); writer.close();
+          const chunks=[]; while(true){const{done,value}=await reader.read();if(done)break;chunks.push(value);}
+          const total=chunks.reduce((a,b)=>a+b.length,0);
+          const arr=new Uint8Array(total); let pos=0;
+          for(const c of chunks){arr.set(c,pos);pos+=c.length;}
+          result = filename.endsWith('.zip') ? arr.buffer : new TextDecoder('utf-8',{fatal:false}).decode(arr);
+        } else {
+          result = filename.endsWith('.zip') ? compData.buffer : new TextDecoder('utf-8',{fatal:false}).decode(compData);
+        }
+        out[filename]=result;
+      } catch(e) { console.warn('decompress failed:',filename,e); }
+    }
+    offset=dataStart+compSize;
+  }
+  return out;
+}
+
+
+// ── SETTINGS ──
+function saveGroqKey() {
+  const k = document.getElementById('groqKey').value.trim();
+  if (k) { localStorage.setItem('j_groqKey',k); alert('Groq key saved! AI is now active.'); }
+}
+
+function clearHealthData() {
+  localStorage.removeItem('j_lastHealth');
+  healthData = null;
+  // Reset all stat displays
+  ['vSleep','vSteps','vRHR','vBody','vExercise','vDist',
+   'enEaten','enBurned','enNet','mProt','mCarb','mFat','mWater'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = '—';
+  });
+  ['mProtBar','mCarbBar','mFatBar','mWaterBar','enBar'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.width = '0%';
+  });
+  const badge = document.getElementById('balBadge');
+  if (badge) { badge.textContent='—'; badge.className='energy-badge'; }
+  document.getElementById('strainWrap').style.display='none';
+  document.getElementById('sleepSummary').textContent='Load data then tap to generate AI sleep analysis…';
+  document.getElementById('sleepSummary').classList.remove('loaded');
+  document.getElementById('workoutSummary').textContent='Load data then tap to generate AI workout summary…';
+  document.getElementById('workoutSummary').classList.remove('loaded');
+  document.getElementById('sdot').classList.remove('live');
+  document.getElementById('statusTxt').textContent='No data loaded';
+  // Reset import UI
+  const drop = document.getElementById('importDrop');
+  drop.classList.remove('loaded');
+  document.getElementById('importIcon').textContent='📦';
+  document.getElementById('importTitle').textContent='Drop ZIP or tap to browse';
+  document.getElementById('importSub').textContent='HealthExportCSV export · parsed locally · no upload needed';
+  document.getElementById('importLog').style.display='none';
+  document.getElementById('importResult').style.display='none';
+  document.getElementById('importLogLines').innerHTML='';
+  document.getElementById('importMetrics').innerHTML='';
+  document.getElementById('zipInput').value='';
+}
+</script>
+</body>
+</html>
